@@ -7,33 +7,69 @@ namespace Drivers
     class GPIO
     {
     public:
+        enum class PinNumber{
+            PIN1 = 1,PIN2,PIN3,PIN4,PIN5,PIN6,PIN7,PIN8,
+            PIN9,PIN10,PIN11,PIN12,PIN13,PIN14,PIN15
+        };
+
+        enum class Mode{
+            In = 0,
+            Out = 1,
+            Alt = 2,
+            Analog = 3,
+            IT_FE = 4,      // Falling edge
+            IT_RE = 5,      // Rising edge
+            IT_RFE = 6      // Falling-rising edge
+        };
+
+        enum class OutputType{
+            PP = 0,         // Push-pull
+            OP = 1          // Open drain
+        };
+
+        enum class Speed{
+            LOW = 0,
+            MEDIUM = 1,
+            FASH = 2,
+            HIGH = 3
+        };
+
+        enum class PuPd{
+            NoPuPd = 0,
+            Pu = 1,
+            Pd = 2
+        };
+
         typedef struct
         {
-            uint8_t Number;
-            uint8_t Mode;
-            uint8_t Speed;
-            uint8_t PuPdControl;
-            uint8_t OType;
-            uint8_t PinAltFunMode;
+            PinNumber number;
+            Mode mode;
+            Speed speed;
+            PuPd puPdControl;
+            OutputType oType;
+            uint8_t pinAltFunMode;
         } PinConfig_t;
 
         typedef struct
         {
             Core::Reg::Def::GPIO_t *pGPIOx;         // Pointer to hold base address of the GPIO peripheral
-            PinConfig_t PinConfig;
+            PinConfig_t pinConfig;
         } Handle_t;
 
         // API
-        void Init();
-        void DeInit();
-        void PeriClockControl();
-        void ReadFromInputPin();
-        void ReadFromInputPort();
-        void WriteToOutputPin();
-        void WriteToOutputPort();
-        void ToggleOutputPin();
-        void IRQConfig();
-        void IRQHandling(); 
+        static void PeriClockControl(Core::Reg::Def::GPIO_t *pGPIOx, bool enabled);
+
+        static void Init(GPIO::Handle_t *pGPIOHandle);
+        static void DeInit(Core::Reg::Def::GPIO_t *pGPIOx);
+
+        static Core::Bit::State ReadFromInputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber);
+        static uint16_t ReadFromInputPort(Core::Reg::Def::GPIO_t *pGPIOx);
+        static void WriteToOutputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber, Core::Bit::State state);
+        static void WriteToOutputPort(Core::Reg::Def::GPIO_t *pGPIOx, uint16_t value);
+        static void ToggleOutputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber);
+
+        static void IRQConfig(uint8_t IRQNumber, uint8_t IRQPriority, uint8_t enabled);
+        static void IRQHandling(PinNumber pinNumber); 
 
 
     };

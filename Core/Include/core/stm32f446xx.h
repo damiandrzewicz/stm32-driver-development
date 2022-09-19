@@ -113,88 +113,109 @@ namespace Core
                 volatile uint32_t DCKCFGR2;
             } RCC_t;
         }
-        
-        // GPIO
-        auto GPIOA    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOA);
-        auto GPIOB    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOB);
-        auto GPIOC    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOC);
-        auto GPIOD    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOD);
-        auto GPIOE    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOE);
-        auto GPIOF    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOF);
-        auto GPIOG    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOG);
-        auto GPIOH    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOH);
+
+                // GPIO
+        static auto GPIOA = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOA);
+        static auto GPIOB    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOB);
+        static auto GPIOC    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOC);
+        static auto GPIOD    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOD);
+        static auto GPIOE    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOE);
+        static auto GPIOF    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOF);
+        static auto GPIOG    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOG);
+        static auto GPIOH    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOH);
 
         // RCC
-        auto RCC      = reinterpret_cast<Def::RCC_t*>(Addr::Periph::RCC);
+        static auto RCC      = reinterpret_cast<Def::RCC_t*>(Addr::Periph::RCC);
     }
 
-    namespace Util
+    namespace Bit
     {
-        namespace Bit
-        {
-            auto Set    = [](auto &pReg, auto bit){ pReg = pReg | (1 << bit); };
-            auto Clear  = [](auto &pReg, auto bit){ pReg = pReg & ~(1 << bit); };
-        }
+        static auto Set    = [](auto &pReg, auto bit){ pReg = pReg | (1 << bit); };
+        static auto Clear  = [](auto &pReg, auto bit){ pReg = pReg & ~(1 << bit); };
+        static auto Xor = [](auto &pReg, auto bit){ pReg = pReg ^ (1 << bit); };
 
+        enum State
+        {
+            RESET = 0,
+            DISABLE = 0,
+            SET = 1,
+            ENABLE = 1
+        };
+
+        namespace Range
+        {
+            static auto Set    = [](auto &pReg, auto value){ pReg = pReg | value; };
+            static auto Clear  = [](auto &pReg, auto value){ pReg = pReg & ~value; };
+        }
     }
+    
 
     namespace Clock
     {
         // GPIOx
-        auto GPIOA_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->AHB1ENR, 0); };
-        auto GPIOB_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->AHB1ENR, 1); };
-        auto GPIOC_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->AHB1ENR, 2); };
-        auto GPIOD_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->AHB1ENR, 3); };
-        auto GPIOE_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->AHB1ENR, 4); };
-        auto GPIOF_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->AHB1ENR, 5); };
-        auto GPIOG_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->AHB1ENR, 6); };
-        auto GPIOH_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->AHB1ENR, 7); };
+        static auto GPIOA_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB1ENR, 0); };
+        static auto GPIOB_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB1ENR, 1); };
+        static auto GPIOC_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB1ENR, 2); };
+        static auto GPIOD_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB1ENR, 3); };
+        static auto GPIOE_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB1ENR, 4); };
+        static auto GPIOF_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB1ENR, 5); };
+        static auto GPIOG_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB1ENR, 6); };
+        static auto GPIOH_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB1ENR, 7); };
 
-        auto GPIOA_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->AHB1ENR, 0); };
-        auto GPIOB_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->AHB1ENR, 1); };
-        auto GPIOC_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->AHB1ENR, 2); };
-        auto GPIOD_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->AHB1ENR, 3); };
-        auto GPIOE_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->AHB1ENR, 4); };
-        auto GPIOF_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->AHB1ENR, 5); };
-        auto GPIOG_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->AHB1ENR, 6); };
-        auto GPIOH_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->AHB1ENR, 7); };
+        static auto GPIOA_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB1ENR, 0); };
+        static auto GPIOB_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB1ENR, 1); };
+        static auto GPIOC_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB1ENR, 2); };
+        static auto GPIOD_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB1ENR, 3); };
+        static auto GPIOE_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB1ENR, 4); };
+        static auto GPIOF_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB1ENR, 5); };
+        static auto GPIOG_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB1ENR, 6); };
+        static auto GPIOH_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB1ENR, 7); };
+
+        static auto GPIOA_REG_RESET = [](){ Bit::Set(Reg::RCC->AHB1RSTR, 0); Bit::Clear(Reg::RCC->AHB1RSTR, 0); };
+        static auto GPIOB_REG_RESET = [](){ Bit::Set(Reg::RCC->AHB1RSTR, 1); Bit::Clear(Reg::RCC->AHB1RSTR, 1); };
+        static auto GPIOC_REG_RESET = [](){ Bit::Set(Reg::RCC->AHB1RSTR, 2); Bit::Clear(Reg::RCC->AHB1RSTR, 2); };
+        static auto GPIOD_REG_RESET = [](){ Bit::Set(Reg::RCC->AHB1RSTR, 3); Bit::Clear(Reg::RCC->AHB1RSTR, 3); };
+        static auto GPIOE_REG_RESET = [](){ Bit::Set(Reg::RCC->AHB1RSTR, 4); Bit::Clear(Reg::RCC->AHB1RSTR, 4); };
+        static auto GPIOF_REG_RESET = [](){ Bit::Set(Reg::RCC->AHB1RSTR, 5); Bit::Clear(Reg::RCC->AHB1RSTR, 5); };
+        static auto GPIOG_REG_RESET = [](){ Bit::Set(Reg::RCC->AHB1RSTR, 6); Bit::Clear(Reg::RCC->AHB1RSTR, 6); };
+        static auto GPIOH_REG_RESET = [](){ Bit::Set(Reg::RCC->AHB1RSTR, 7); Bit::Clear(Reg::RCC->AHB1RSTR, 7); };
 
         // I2Cx
-        auto I2C1_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->AHB1ENR, 21); };
-        auto I2C2_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->AHB1ENR, 22); };
-        auto I2C3_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->AHB1ENR, 23); };
+        static auto I2C1_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB1ENR, 21); };
+        static auto I2C2_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB1ENR, 22); };
+        static auto I2C3_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB1ENR, 23); };
 
-        auto I2C1_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->AHB1ENR, 21); };
-        auto I2C2_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->AHB1ENR, 22); };
-        auto I2C3_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->AHB1ENR, 23); };
+        static auto I2C1_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB1ENR, 21); };
+        static auto I2C2_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB1ENR, 22); };
+        static auto I2C3_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB1ENR, 23); };
 
         // SPIx
-        auto SPI1_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->APB2ENR, 12); };
-        auto SPI2_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->AHB3ENR, 14); };
-        auto SPI3_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->AHB1ENR, 15); };
+        static auto SPI1_PCLK_EN = [](){ Bit::Set(Reg::RCC->APB2ENR, 12); };
+        static auto SPI2_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB3ENR, 14); };
+        static auto SPI3_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB1ENR, 15); };
 
-        auto SPI1_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->APB2ENR, 12); };
-        auto SPI2_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->AHB3ENR, 14); };
-        auto SPI3_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->AHB1ENR, 15); };
+        static auto SPI1_PCLK_DI = [](){ Bit::Clear(Reg::RCC->APB2ENR, 12); };
+        static auto SPI2_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB3ENR, 14); };
+        static auto SPI3_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB1ENR, 15); };
 
         // USART
-        auto USART1_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->APB2ENR, 4); };
-        auto USART2_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->APB1ENR, 17); };
-        auto USART3_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->APB1ENR, 18); };
-        auto UART4_PCLK_EN  = [](){ Util::Bit::Set(Reg::RCC->APB1ENR, 19); };
-        auto UART5_PCLK_EN  = [](){ Util::Bit::Set(Reg::RCC->APB1ENR, 20); };
-        auto USART6_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->APB2ENR, 5); };
+        static auto USART1_PCLK_EN = [](){ Bit::Set(Reg::RCC->APB2ENR, 4); };
+        static auto USART2_PCLK_EN = [](){ Bit::Set(Reg::RCC->APB1ENR, 17); };
+        static auto USART3_PCLK_EN = [](){ Bit::Set(Reg::RCC->APB1ENR, 18); };
+        static auto UART4_PCLK_EN  = [](){ Bit::Set(Reg::RCC->APB1ENR, 19); };
+        static auto UART5_PCLK_EN  = [](){ Bit::Set(Reg::RCC->APB1ENR, 20); };
+        static auto USART6_PCLK_EN = [](){ Bit::Set(Reg::RCC->APB2ENR, 5); };
 
-        auto USART1_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->APB2ENR, 4); };
-        auto USART2_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->APB1ENR, 17); };
-        auto USART3_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->APB1ENR, 18); };
-        auto UART4_PCLK_DI  = [](){ Util::Bit::Clear(Reg::RCC->APB1ENR, 19); };
-        auto UART5_PCLK_DI  = [](){ Util::Bit::Clear(Reg::RCC->APB1ENR, 20); };
-        auto USART6_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->APB2ENR, 5); };
+        static auto USART1_PCLK_DI = [](){ Bit::Clear(Reg::RCC->APB2ENR, 4); };
+        static auto USART2_PCLK_DI = [](){ Bit::Clear(Reg::RCC->APB1ENR, 17); };
+        static auto USART3_PCLK_DI = [](){ Bit::Clear(Reg::RCC->APB1ENR, 18); };
+        static auto UART4_PCLK_DI  = [](){ Bit::Clear(Reg::RCC->APB1ENR, 19); };
+        static auto UART5_PCLK_DI  = [](){ Bit::Clear(Reg::RCC->APB1ENR, 20); };
+        static auto USART6_PCLK_DI = [](){ Bit::Clear(Reg::RCC->APB2ENR, 5); };
 
         // SYSCFG
-        auto SYSCFG_PCLK_EN = [](){ Util::Bit::Set(Reg::RCC->APB2ENR, 14); };
-        auto SYSCFG_PCLK_DI = [](){ Util::Bit::Clear(Reg::RCC->APB2ENR, 14); };
+        static auto SYSCFG_PCLK_EN = [](){ Bit::Set(Reg::RCC->APB2ENR, 14); };
+        static auto SYSCFG_PCLK_DI = [](){ Bit::Clear(Reg::RCC->APB2ENR, 14); };
     }
 }
 
