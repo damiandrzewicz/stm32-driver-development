@@ -68,8 +68,9 @@ namespace Drivers
         static void WriteToOutputPort(Core::Reg::Def::GPIO_t *pGPIOx, uint16_t value);
         static void ToggleOutputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber);
 
-        static void IRQConfig(uint8_t IRQNumber, uint8_t IRQPriority, uint8_t enabled);
-        static void IRQHandling(PinNumber pinNumber); 
+        static void IRQInterruptConfig(Core::IRQ IRQNumber, bool enabled);
+        static void IRQPriorityConfig(Core::IRQ IRQNumber, uint8_t IRQpriority);
+        static void IRQHandler(PinNumber pinNumber); 
 
 
     };

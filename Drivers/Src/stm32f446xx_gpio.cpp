@@ -43,8 +43,35 @@ namespace Drivers
         }
         else
         {
-            // interrupt modes
-            // TODO
+            // Interrupt modes
+
+            // 1. configure falling/rising/falling&rising selection registers
+            if(static_cast<uint8_t>(pGPIOHandle->pinConfig.mode) == static_cast<uint8_t>(Mode::IT_FE))
+            {
+                Core::Bit::Set(Core::Reg::EXTI->FTSR, static_cast<uint32_t>(pGPIOHandle->pinConfig.number));
+                Core::Bit::Clear(Core::Reg::EXTI->RTSR, static_cast<uint32_t>(pGPIOHandle->pinConfig.number));
+            }
+            else if(static_cast<uint8_t>(pGPIOHandle->pinConfig.mode) == static_cast<uint8_t>(Mode::IT_RE))
+            {
+                Core::Bit::Set(Core::Reg::EXTI->RTSR, static_cast<uint32_t>(pGPIOHandle->pinConfig.number));
+                Core::Bit::Clear(Core::Reg::EXTI->FTSR, static_cast<uint32_t>(pGPIOHandle->pinConfig.number));
+            }
+            else if(static_cast<uint8_t>(pGPIOHandle->pinConfig.mode) == static_cast<uint8_t>(Mode::IT_RFE))
+            {
+                Core::Bit::Set(Core::Reg::EXTI->RTSR, static_cast<uint32_t>(pGPIOHandle->pinConfig.number));
+                Core::Bit::Set(Core::Reg::EXTI->FTSR, static_cast<uint32_t>(pGPIOHandle->pinConfig.number));
+            }
+
+            // 2. Configure GPIO port selection in SYSCFG_EXTICR
+            uint8_t temp1 = static_cast<uint32_t>(pGPIOHandle->pinConfig.number) / 4;
+            uint8_t temp2 = static_cast<uint32_t>(pGPIOHandle->pinConfig.number) % 4;
+            uint8_t portcode = Core::Util::GPIO_ADDR_TO_CODE(pGPIOHandle->pGPIOx);
+            Core::Clock::SYSCFG_PCLK_EN();
+            Core::Bit::Range::Set(Core::Reg::SYSCFG->EXTICR[temp1], portcode << (temp2 * 4));
+
+
+            // 3. Enable the EXTI interrupt delivery in IMR
+            Core::Bit::Set(Core::Reg::EXTI->IMR, static_cast<uint32_t>(pGPIOHandle->pinConfig.number));
         }
 
         // speed
@@ -104,7 +131,7 @@ namespace Drivers
 
     void GPIO::WriteToOutputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber, Core::Bit::State value)
     {
-        if(value == Core::Bit::SET)
+        if(value == Core::Bit::State::SET)
         {
             Core::Bit::Set(pGPIOx->ODR, static_cast<uint8_t>(value));
         }
@@ -124,14 +151,58 @@ namespace Drivers
         Core::Bit::Xor(pGPIOx->ODR, static_cast<uint8_t>(pinNumber));
     }
 
-    void GPIO::IRQConfig(uint8_t IRQNumber, uint8_t IRQPriority, uint8_t enabled)
+    void GPIO::IRQInterruptConfig(Core::IRQ IRQNumber, bool enabled)
     {
-
+        auto irqNo = static_cast<uint8_t>(IRQNumber);
+        if(enabled)
+        {
+            if(irqNo <= 31)
+            {
+                Core::Bit::Set(*Core::Addr::ARMCortexMx::NVIC_ISER0, irqNo);
+            }
+            else if(irqNo > 31 && irqNo < 64)
+            {
+                Core::Bit::Set(*Core::Addr::ARMCortexMx::NVIC_ISER1, irqNo % 32);
+            }
+            else if(irqNo > 64 && irqNo < 96)
+            {
+                Core::Bit::Set(*Core::Addr::ARMCortexMx::NVIC_ISER3, irqNo % 64);
+            }
+        }
+        else
+        {
+            if(irqNo <= 31)
+            {
+                Core::Bit::Clear(*Core::Addr::ARMCortexMx::NVIC_ICER0, irqNo);
+            }
+            else if(irqNo > 31 && irqNo < 64)
+            {
+                Core::Bit::Clear(*Core::Addr::ARMCortexMx::NVIC_ICER1, irqNo % 32);
+            }
+            else if(irqNo > 64 && irqNo < 96)
+            {
+                Core::Bit::Clear(*Core::Addr::ARMCortexMx::NVIC_ICER3, irqNo % 64);
+            }
+        }
     }
 
-    void GPIO::IRQHandling(PinNumber pinNumber)
+    void GPIO::IRQPriorityConfig(Core::IRQ IRQNumber, uint8_t IRQpriority)
     {
+        auto irqNo = static_cast<uint8_t>(IRQNumber);
+        uint8_t iprx = irqNo / 4;
+        uint8_t iprxSection = irqNo % 4;
 
+        uint8_t shift_amount = (8 * iprxSection) + (8 - Core::Addr::ARMCortexMx::NO_PR_BITS_IMPLEMENTED);
+        Core::Bit::Range::Set(*(Core::Addr::ARMCortexMx::NVIC_PR + (iprx * 4)), (IRQpriority << shift_amount));
+    }
+
+    void GPIO::IRQHandler(PinNumber pinNumber)
+    {
+        auto pinNo = static_cast<uint8_t>(pinNumber);
+        if((Core::Reg::EXTI->PR) & (1 << pinNo))
+        {
+            Core::Bit::Set(Core::Reg::EXTI->PR, (1 << pinNo));
+        }
     }
 }
 

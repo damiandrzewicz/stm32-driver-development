@@ -1,5 +1,8 @@
+#include <cstring>
 #include "core/stm32f446xx.h"
 #include "drivers/stm32f446xx_gpio.h"
+
+
 
 int main()
 {
@@ -8,6 +11,8 @@ int main()
     Core::Clock::GPIOC_PCLK_EN();
 
     Drivers::GPIO::Handle_t gpioLed;
+    std::memset(&gpioLed, 0, sizeof(Drivers::GPIO::Handle_t));
+
     gpioLed.pGPIOx = Core::Reg::GPIOA;
     gpioLed.pinConfig.number = Drivers::GPIO::PinNumber::PIN5;
     gpioLed.pinConfig.mode = Drivers::GPIO::Mode::Out;
@@ -17,23 +22,38 @@ int main()
     Drivers::GPIO::Init(&gpioLed);
 
     Drivers::GPIO::Handle_t button;
+    std::memset(&button, 0, sizeof(Drivers::GPIO::Handle_t));
+
     button.pGPIOx = Core::Reg::GPIOC;
     button.pinConfig.number = Drivers::GPIO::PinNumber::PIN13;
-    button.pinConfig.mode = Drivers::GPIO::Mode::In;
+    button.pinConfig.mode = Drivers::GPIO::Mode::IT_FE;
     button.pinConfig.speed = Drivers::GPIO::Speed::HIGH;
     button.pinConfig.puPdControl = Drivers::GPIO::PuPd::NoPuPd;
     Drivers::GPIO::Init(&button);
 
+    Drivers::GPIO::IRQInterruptConfig(Core::IRQ::EXTI15_10, true);
+    Drivers::GPIO::IRQPriorityConfig(Core::IRQ::EXTI15_10, 15);
+
     /** Infinite loop */
     while(1)
     {
-        auto value = Drivers::GPIO::ReadFromInputPin(Core::Reg::GPIOC, Drivers::GPIO::PinNumber::PIN13);
-        if(value == Core::Bit::State::RESET)
-        {   
-            //for(uint32_t i = 0; i < 800000; i++);
-            Drivers::GPIO::ToggleOutputPin(Core::Reg::GPIOA, Drivers::GPIO::PinNumber::PIN5);
-        }
+        // auto value = Drivers::GPIO::ReadFromInputPin(Core::Reg::GPIOC, Drivers::GPIO::PinNumber::PIN13);
+        // if(value == Core::Bit::State::RESET)
+        // {   
+        //     //for(uint32_t i = 0; i < 800000; i++);
+        //     Drivers::GPIO::ToggleOutputPin(Core::Reg::GPIOA, Drivers::GPIO::PinNumber::PIN5);
+        // }
         
         //for(uint32_t i = 0; i < 800000; i++);
     }
 }
+
+extern "C" 
+{
+    void EXTI15_10_IRQHandler(void)
+    {
+        Drivers::GPIO::IRQHandler(Drivers::GPIO::PinNumber::PIN13);
+        Drivers::GPIO::ToggleOutputPin(Core::Reg::GPIOA, Drivers::GPIO::PinNumber::PIN5);
+    }
+}
+

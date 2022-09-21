@@ -5,6 +5,22 @@ namespace Core
 {
     namespace Addr
     {
+        namespace ARMCortexMx
+        {
+            static auto NVIC_ISER0    = reinterpret_cast<volatile uint32_t*>(0xE000E100U);
+            static auto NVIC_ISER1    = reinterpret_cast<volatile uint32_t*>(0xE000E104U);
+            static auto NVIC_ISER2    = reinterpret_cast<volatile uint32_t*>(0xE000E108U);
+            static auto NVIC_ISER3    = reinterpret_cast<volatile uint32_t*>(0xE000E10CU);
+
+            static auto NVIC_ICER0    = reinterpret_cast<volatile uint32_t*>(0xE000E180U);
+            static auto NVIC_ICER1    = reinterpret_cast<volatile uint32_t*>(0xE000E184U);
+            static auto NVIC_ICER2    = reinterpret_cast<volatile uint32_t*>(0xE000E188U);
+            static auto NVIC_ICER3    = reinterpret_cast<volatile uint32_t*>(0xE000E18CU);
+
+            static auto NVIC_PR    = reinterpret_cast<volatile uint32_t*>(0xE000E18CU);
+
+            constexpr auto NO_PR_BITS_IMPLEMENTED = 4;
+        }
         namespace Base
         {
             constexpr auto FLASH    = 0x08000000U;      // Flash Memory
@@ -112,9 +128,30 @@ namespace Core
                 volatile uint32_t CKGATENR;
                 volatile uint32_t DCKCFGR2;
             } RCC_t;
+
+            typedef struct
+            {
+                volatile uint32_t IMR;
+                volatile uint32_t EMR;
+                volatile uint32_t RTSR;
+                volatile uint32_t FTSR;
+                volatile uint32_t SWIER;
+                volatile uint32_t PR;
+            } EXTI_t;
+
+            typedef struct
+            {
+                volatile uint32_t MEMRMP;
+                volatile uint32_t PMC;
+                volatile uint32_t EXTICR[4];
+                uint32_t RESERVED1[2];
+                volatile uint32_t CMPCR;
+                uint32_t RESERVED2[2];
+                volatile uint32_t CFGR;
+            } SYSCFG_t;
         }
 
-                // GPIO
+        // GPIO
         static auto GPIOA = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOA);
         static auto GPIOB    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOB);
         static auto GPIOC    = reinterpret_cast<Def::GPIO_t*>(Addr::Periph::GPIOC);
@@ -126,6 +163,12 @@ namespace Core
 
         // RCC
         static auto RCC      = reinterpret_cast<Def::RCC_t*>(Addr::Periph::RCC);
+
+        // EXIT
+        static auto EXTI     = reinterpret_cast<Def::EXTI_t*>(Addr::Periph::EXTI);
+
+        // SYSCFG
+        static auto SYSCFG   = reinterpret_cast<Def::SYSCFG_t*>(Addr::Periph::SYSCFG);
     }
 
     namespace Bit
@@ -134,7 +177,7 @@ namespace Core
         static auto Clear  = [](auto &pReg, auto bit){ pReg = pReg & ~(1 << bit); };
         static auto Xor = [](auto &pReg, auto bit){ pReg = pReg ^ (1 << bit); };
 
-        enum State
+        enum class State
         {
             RESET = 0,
             DISABLE = 0,
@@ -216,6 +259,31 @@ namespace Core
         // SYSCFG
         static auto SYSCFG_PCLK_EN = [](){ Bit::Set(Reg::RCC->APB2ENR, 14); };
         static auto SYSCFG_PCLK_DI = [](){ Bit::Clear(Reg::RCC->APB2ENR, 14); };
+    }
+
+    enum class IRQ
+    {
+        EXTI0 = 6,
+        EXTI1,
+        EXTI2,
+        EXTI3,
+        EXTI4,
+        EXTI9_5 = 23,
+        EXTI15_10 = 40
+    };
+
+    namespace Util
+    {
+        static auto GPIO_ADDR_TO_CODE = [](const auto &reg){ 
+            return (reg == Reg::GPIOA) ? 0 :
+                   (reg == Reg::GPIOB) ? 1 :
+                   (reg == Reg::GPIOC) ? 2 :
+                   (reg == Reg::GPIOD) ? 3 :
+                   (reg == Reg::GPIOE) ? 4 :
+                   (reg == Reg::GPIOF) ? 5 :
+                   (reg == Reg::GPIOG) ? 6 :
+                   (reg == Reg::GPIOH) ? 7 : 0;
+         };
     }
 }
 

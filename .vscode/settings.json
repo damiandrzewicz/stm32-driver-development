@@ -48,6 +48,7 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp",
-        "main.h": "c"
+        "main.h": "c",
+        "cstring": "cpp"
     }
 }
