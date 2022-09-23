@@ -119,9 +119,9 @@ namespace Drivers
 
     }
 
-    Core::Bit::State GPIO::ReadFromInputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber)
+    Core::State GPIO::ReadFromInputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber)
     {
-        return static_cast<Core::Bit::State>((static_cast<uint32_t>(pGPIOx->IDR) >> static_cast<uint8_t>(pinNumber)) & 0x00000001);
+        return static_cast<Core::State>((static_cast<uint32_t>(pGPIOx->IDR) >> static_cast<uint8_t>(pinNumber)) & 0x00000001);
     }
 
     uint16_t GPIO::ReadFromInputPort(Core::Reg::Def::GPIO_t *pGPIOx)
@@ -129,9 +129,9 @@ namespace Drivers
         return static_cast<uint16_t>(pGPIOx->IDR);
     }
 
-    void GPIO::WriteToOutputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber, Core::Bit::State value)
+    void GPIO::WriteToOutputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber, Core::State value)
     {
-        if(value == Core::Bit::State::SET)
+        if(value == Core::State::SET)
         {
             Core::Bit::Set(pGPIOx->ODR, static_cast<uint8_t>(value));
         }
@@ -151,7 +151,7 @@ namespace Drivers
         Core::Bit::Xor(pGPIOx->ODR, static_cast<uint8_t>(pinNumber));
     }
 
-    void GPIO::IRQInterruptConfig(Core::IRQ IRQNumber, bool enabled)
+    void GPIO::IRQInterruptConfig(Core::IRQ::Number IRQNumber, bool enabled)
     {
         auto irqNo = static_cast<uint8_t>(IRQNumber);
         if(enabled)
@@ -186,14 +186,16 @@ namespace Drivers
         }
     }
 
-    void GPIO::IRQPriorityConfig(Core::IRQ IRQNumber, uint8_t IRQpriority)
+    void GPIO::IRQPriorityConfig(Core::IRQ::Number IRQNumber, Core::IRQ::Priority IRQpriority)
     {
         auto irqNo = static_cast<uint8_t>(IRQNumber);
         uint8_t iprx = irqNo / 4;
         uint8_t iprxSection = irqNo % 4;
 
+        auto irqPr = static_cast<uint32_t>(IRQpriority);
         uint8_t shift_amount = (8 * iprxSection) + (8 - Core::Addr::ARMCortexMx::NO_PR_BITS_IMPLEMENTED);
-        Core::Bit::Range::Set(*(Core::Addr::ARMCortexMx::NVIC_PR + (iprx * 4)), (IRQpriority << shift_amount));
+        *(Core::Addr::ARMCortexMx::NVIC_PR + iprx) = *(Core::Addr::ARMCortexMx::NVIC_PR + iprx) | (irqPr << shift_amount);
+        //Core::Bit::Range::Set(*(Core::Addr::ARMCortexMx::NVIC_PR + iprx), (irqPr << shift_amount));
     }
 
     void GPIO::IRQHandler(PinNumber pinNumber)

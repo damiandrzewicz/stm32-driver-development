@@ -10,8 +10,7 @@ int main()
     Core::Clock::GPIOA_PCLK_EN();
     Core::Clock::GPIOC_PCLK_EN();
 
-    Drivers::GPIO::Handle_t gpioLed;
-    std::memset(&gpioLed, 0, sizeof(Drivers::GPIO::Handle_t));
+    Drivers::GPIO::Handle_t gpioLed = {};
 
     gpioLed.pGPIOx = Core::Reg::GPIOA;
     gpioLed.pinConfig.number = Drivers::GPIO::PinNumber::PIN5;
@@ -21,8 +20,7 @@ int main()
     gpioLed.pinConfig.puPdControl = Drivers::GPIO::PuPd::NoPuPd;
     Drivers::GPIO::Init(&gpioLed);
 
-    Drivers::GPIO::Handle_t button;
-    std::memset(&button, 0, sizeof(Drivers::GPIO::Handle_t));
+    Drivers::GPIO::Handle_t button = {};
 
     button.pGPIOx = Core::Reg::GPIOC;
     button.pinConfig.number = Drivers::GPIO::PinNumber::PIN13;
@@ -31,8 +29,8 @@ int main()
     button.pinConfig.puPdControl = Drivers::GPIO::PuPd::NoPuPd;
     Drivers::GPIO::Init(&button);
 
-    Drivers::GPIO::IRQInterruptConfig(Core::IRQ::EXTI15_10, true);
-    Drivers::GPIO::IRQPriorityConfig(Core::IRQ::EXTI15_10, 15);
+    Drivers::GPIO::IRQInterruptConfig(Core::IRQ::Number::EXTI15_10, true);
+    Drivers::GPIO::IRQPriorityConfig(Core::IRQ::Number::EXTI15_10, Core::IRQ::Priority::PRI15);
 
     /** Infinite loop */
     while(1)

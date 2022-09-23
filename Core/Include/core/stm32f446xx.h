@@ -17,7 +17,7 @@ namespace Core
             static auto NVIC_ICER2    = reinterpret_cast<volatile uint32_t*>(0xE000E188U);
             static auto NVIC_ICER3    = reinterpret_cast<volatile uint32_t*>(0xE000E18CU);
 
-            static auto NVIC_PR    = reinterpret_cast<volatile uint32_t*>(0xE000E18CU);
+            static auto NVIC_PR    = reinterpret_cast<volatile uint32_t*>(0xE000E400U);
 
             constexpr auto NO_PR_BITS_IMPLEMENTED = 4;
         }
@@ -141,6 +141,19 @@ namespace Core
 
             typedef struct
             {
+                volatile uint32_t CR1;
+                volatile uint32_t CR2;
+                volatile uint32_t SR;
+                volatile uint32_t DR;
+                volatile uint32_t CRCPR;
+                volatile uint32_t RXCRCR;
+                volatile uint32_t TXCRCR;
+                volatile uint32_t I2SCFGR;
+                volatile uint32_t I2SPR;
+            } SPI_t;
+
+            typedef struct
+            {
                 volatile uint32_t MEMRMP;
                 volatile uint32_t PMC;
                 volatile uint32_t EXTICR[4];
@@ -169,6 +182,11 @@ namespace Core
 
         // SYSCFG
         static auto SYSCFG   = reinterpret_cast<Def::SYSCFG_t*>(Addr::Periph::SYSCFG);
+
+        // SPI
+        static auto SPI1   = reinterpret_cast<Def::SPI_t*>(Addr::Periph::SPI1);
+        static auto SPI2   = reinterpret_cast<Def::SPI_t*>(Addr::Periph::SPI2);
+        static auto SPI3   = reinterpret_cast<Def::SPI_t*>(Addr::Periph::SPI3);
     }
 
     namespace Bit
@@ -176,14 +194,6 @@ namespace Core
         static auto Set    = [](auto &pReg, auto bit){ pReg = pReg | (1 << bit); };
         static auto Clear  = [](auto &pReg, auto bit){ pReg = pReg & ~(1 << bit); };
         static auto Xor = [](auto &pReg, auto bit){ pReg = pReg ^ (1 << bit); };
-
-        enum class State
-        {
-            RESET = 0,
-            DISABLE = 0,
-            SET = 1,
-            ENABLE = 1
-        };
 
         namespace Range
         {
@@ -261,16 +271,25 @@ namespace Core
         static auto SYSCFG_PCLK_DI = [](){ Bit::Clear(Reg::RCC->APB2ENR, 14); };
     }
 
-    enum class IRQ
+    namespace IRQ
     {
-        EXTI0 = 6,
-        EXTI1,
-        EXTI2,
-        EXTI3,
-        EXTI4,
-        EXTI9_5 = 23,
-        EXTI15_10 = 40
-    };
+        enum class Number
+        {
+            EXTI0 = 6,
+            EXTI1,
+            EXTI2,
+            EXTI3,
+            EXTI4,
+            EXTI9_5 = 23,
+            EXTI15_10 = 40
+        };
+
+        enum class Priority
+        {
+            PRI0 = 0,
+            PRI15 = 15
+        };
+    }
 
     namespace Util
     {
@@ -285,5 +304,13 @@ namespace Core
                    (reg == Reg::GPIOH) ? 7 : 0;
          };
     }
+
+    enum class State
+    {
+        RESET = 0,
+        DISABLE = 0,
+        SET = 1,
+        ENABLE = 1
+    };
 }
 

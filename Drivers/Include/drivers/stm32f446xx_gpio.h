@@ -62,14 +62,14 @@ namespace Drivers
         static void Init(GPIO::Handle_t *pGPIOHandle);
         static void DeInit(Core::Reg::Def::GPIO_t *pGPIOx);
 
-        static Core::Bit::State ReadFromInputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber);
+        static Core::State ReadFromInputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber);
         static uint16_t ReadFromInputPort(Core::Reg::Def::GPIO_t *pGPIOx);
-        static void WriteToOutputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber, Core::Bit::State state);
+        static void WriteToOutputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber, Core::State state);
         static void WriteToOutputPort(Core::Reg::Def::GPIO_t *pGPIOx, uint16_t value);
         static void ToggleOutputPin(Core::Reg::Def::GPIO_t *pGPIOx, PinNumber pinNumber);
 
-        static void IRQInterruptConfig(Core::IRQ IRQNumber, bool enabled);
-        static void IRQPriorityConfig(Core::IRQ IRQNumber, uint8_t IRQpriority);
+        static void IRQInterruptConfig(Core::IRQ::Number IRQNumber, bool enabled);
+        static void IRQPriorityConfig(Core::IRQ::Number IRQNumber, Core::IRQ::Priority IRQpriority);
         static void IRQHandler(PinNumber pinNumber); 
 
 
