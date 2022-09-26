@@ -194,6 +194,7 @@ namespace Core
         static auto Set    = [](auto &pReg, auto bit){ pReg = pReg | (1 << bit); };
         static auto Clear  = [](auto &pReg, auto bit){ pReg = pReg & ~(1 << bit); };
         static auto Xor = [](auto &pReg, auto bit){ pReg = pReg ^ (1 << bit); };
+        static auto IsSet = [](auto &pReg, auto bit){ return pReg & (1 << bit); };
 
         namespace Range
         {
@@ -244,12 +245,16 @@ namespace Core
 
         // SPIx
         static auto SPI1_PCLK_EN = [](){ Bit::Set(Reg::RCC->APB2ENR, 12); };
-        static auto SPI2_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB3ENR, 14); };
-        static auto SPI3_PCLK_EN = [](){ Bit::Set(Reg::RCC->AHB1ENR, 15); };
+        static auto SPI2_PCLK_EN = [](){ Bit::Set(Reg::RCC->APB1ENR, 14); };
+        static auto SPI3_PCLK_EN = [](){ Bit::Set(Reg::RCC->APB1ENR, 15); };
 
         static auto SPI1_PCLK_DI = [](){ Bit::Clear(Reg::RCC->APB2ENR, 12); };
-        static auto SPI2_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB3ENR, 14); };
-        static auto SPI3_PCLK_DI = [](){ Bit::Clear(Reg::RCC->AHB1ENR, 15); };
+        static auto SPI2_PCLK_DI = [](){ Bit::Clear(Reg::RCC->APB1ENR, 14); };
+        static auto SPI3_PCLK_DI = [](){ Bit::Clear(Reg::RCC->APB1ENR, 15); };
+
+        static auto SPI1_REG_RESET = [](){ Bit::Set(Reg::RCC->APB2RSTR, 12); };
+        static auto SPI2_REG_RESET = [](){ Bit::Set(Reg::RCC->AHB1RSTR, 14); };
+        static auto SPI3_REG_RESET = [](){ Bit::Set(Reg::RCC->AHB1RSTR, 15); };
 
         // USART
         static auto USART1_PCLK_EN = [](){ Bit::Set(Reg::RCC->APB2ENR, 4); };
